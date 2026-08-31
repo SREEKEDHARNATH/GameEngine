@@ -5,6 +5,7 @@
 #include <iostream>
 #include "KeyListener.h"
 #include "MouseListener.h"
+#include "Shader.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const char* message, const void* userParam){
@@ -74,9 +75,51 @@ namespace Window {
         if (!init()){
             return;
         }
+
+        float vertices[] = {
+           -0.5f, -0.5f,  1.0f, 0.0f, 0.0f, 1.0f,
+            0.5f, -0.5f,  1.0f, 0.0f, 0.0f, 1.0f,
+            0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f,
+           -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f
+        };
+
+        unsigned int indices[] = {
+            0, 1, 2,
+            2, 3, 0
+        };
+
+        unsigned int vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        unsigned int vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        unsigned int ebo;
+        glGenBuffers(1, &ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        Shader::shader shader;
+        shader.create("res/Shaders/square.vert", "res/Shaders/square.frag");
+        shader.bind();
+
+
         while (!glfwWindowShouldClose(instance)){
             glfwPollEvents();
             glClear(GL_COLOR_BUFFER_BIT);
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            Keylistener::endFrame();
+            MouseListener::endFrame();
 
             glfwSwapBuffers(instance);
         }
