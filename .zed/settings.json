@@ -1,0 +1,5 @@
+{
+  "file_types": {
+    "GLSL": ["vert", "frag", "geom", "comp", "glsl"],
+  }
+}

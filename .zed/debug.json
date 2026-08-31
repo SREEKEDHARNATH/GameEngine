@@ -1,0 +1,11 @@
+[
+  {
+    "label": "Debug C++ Executable",
+    "adapter": "CodeLLDB",
+    "request": "launch",
+    "program": "$ZED_WORKTREE_ROOT/main",
+    "args": [],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "stopOnEntry": false
+  }
+]
