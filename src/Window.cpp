@@ -1,3 +1,4 @@
+#include "VBLayout.h"
 #include "gl.h"
 #include "Window.h"
 #include <GLFW/glfw3.h>
@@ -6,6 +7,7 @@
 #include "KeyListener.h"
 #include "MouseListener.h"
 #include "Shader.h"
+#include "Renderer.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const char* message, const void* userParam){
@@ -88,30 +90,24 @@ namespace Window {
             2, 3, 0
         };
 
-        unsigned int vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        Renderer::vertexArray vao;
+        vao.bind();
 
-        unsigned int vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        Renderer::vertexBuffer<float> vbo(vertices, sizeof(vertices));
+        vbo.bind();
 
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
-        glEnableVertexAttribArray(0);
+        VBLayout layout;
+        layout.push<float>(2);
+        layout.push<float>(4);
 
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(2 * sizeof(float)));
-        glEnableVertexAttribArray(1);
+        vao.addVbo(vbo, layout);
 
-        unsigned int ebo;
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        Renderer::indexBuffer<unsigned int> ebo(indices, sizeof(indices));
+        ebo.bind();
 
         Shader::shader shader;
         shader.create("res/Shaders/square.vert", "res/Shaders/square.frag");
         shader.bind();
-
 
         while (!glfwWindowShouldClose(instance)){
             glfwPollEvents();
