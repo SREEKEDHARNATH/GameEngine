@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <unordered_set>
 #include <iostream>
+#include "KeyListener.h"
+#include "MouseListener.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const char* message, const void* userParam){
@@ -31,6 +33,12 @@ namespace Window {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         instance = glfwCreateWindow(getWidth(), getHeight(), getTitle(), nullptr, nullptr);
+
+        glfwSetKeyCallback(instance, Keylistener::keyCallback);
+
+        glfwSetMouseButtonCallback(instance, MouseListener::mouseButtonCallback);
+        glfwSetCursorPosCallback(instance, MouseListener::mousePosCallback);
+        glfwSetScrollCallback(instance, MouseListener::mouseScrollCallback);
 
         if (!instance){
             std::cerr << "Window creation failed\n";
@@ -66,11 +74,9 @@ namespace Window {
         if (!init()){
             return;
         }
-
         while (!glfwWindowShouldClose(instance)){
             glfwPollEvents();
             glClear(GL_COLOR_BUFFER_BIT);
-
 
             glfwSwapBuffers(instance);
         }
