@@ -39,6 +39,7 @@ namespace Renderer {
     template<typename T> class indexBuffer {
         private:
             unsigned int id;
+            int count;
         public:
             indexBuffer(){}
 
@@ -52,8 +53,10 @@ namespace Renderer {
                 glGenBuffers(1, &id);
                 bind();
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, drawMethod);
+                count=size/sizeof(T);
                 unbind();
             }
+            int getCount(){return count;}
 
             void destroy(){
                 glDeleteBuffers(1, &id);
