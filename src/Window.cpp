@@ -6,6 +6,7 @@
 #include <iostream>
 #include "KeyListener.h"
 #include "MouseListener.h"
+#include "Sound.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const char* message, const void* userParam){
@@ -68,6 +69,7 @@ namespace Window {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Sound::SoundSystem::init();
         return true;
     }
 
@@ -83,7 +85,10 @@ namespace Window {
         batch.addQuadWithPos(-0.5f, -0.5f, 0.5f);
 
         batch.setShader(shader);
-
+        Sound::Sound music;
+        music.create("res/Sounds/mc.wav", false, false);
+        music.setVolume(1);
+        music.play();
         while (!glfwWindowShouldClose(instance)){
             glfwPollEvents();
             glClear(GL_COLOR_BUFFER_BIT);
@@ -95,7 +100,7 @@ namespace Window {
 
             glfwSwapBuffers(instance);
         }
-
+        Sound::SoundSystem::destroy();
         glfwDestroyWindow(instance);
         glfwTerminate();
     }

@@ -28,7 +28,7 @@ foreach(HEADER_FILE ${ALL_INCLUDE_FILES})
 endforeach()
 list(REMOVE_DUPLICATES INCLUDE_DIRS)
 
-# Collect source files (split individual patterns properly)
+# 3. Collect project source files
 file(GLOB_RECURSE SOURCES
     CONFIGURE_DEPENDS
     "src/*.cpp"
@@ -37,8 +37,23 @@ file(GLOB_RECURSE SOURCES
     "include/*.cpp"
 )
 
+# Exclude tools, c_api, and all backend implementations from the globbed list
+list(FILTER SOURCES EXCLUDE REGEX ".*/(tools|c_api|backend)/.*")
+
+# Explicitly re-add only the miniaudio backend file
+file(GLOB_RECURSE MINIAUDIO_SRC
+    CONFIGURE_DEPENDS
+   "${CMAKE_CURRENT_SOURCE_DIR}/include/*soloud_miniaudio.cpp"
+   "${CMAKE_CURRENT_SOURCE_DIR}/src/*soloud_miniaudio.cpp"
+)
+list(APPEND SOURCES ${MINIAUDIO_SRC})
+list(REMOVE_DUPLICATES SOURCES)
+
 # Define target executable
 add_executable(main ${SOURCES})
+
+# Compile definitions for SoLoud backend
+target_compile_definitions(main PRIVATE WITH_MINIAUDIO)
 
 # Add all collected include subdirectories to the target
 target_include_directories(main PRIVATE ${INCLUDE_DIRS})
@@ -58,4 +73,5 @@ target_link_libraries(main PRIVATE
     OpenGL::GL
     ${CMAKE_DL_LIBS}
     Threads::Threads
+    m
 )
