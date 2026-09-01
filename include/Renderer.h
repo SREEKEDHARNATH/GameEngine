@@ -1,3 +1,4 @@
+#pragma once
 #include <gl.h>
 #include <vector>
 #include "VBLayout.h"
@@ -22,6 +23,12 @@ namespace Renderer {
                 glBufferData(GL_ARRAY_BUFFER, size, data, drawMethod);
                 unbind();
             }
+            void addSubBuffer(const T* data, unsigned int size, GLintptr offset){
+                bind();
+                glBufferSubData(GL_ARRAY_BUFFER, offset,size, data);
+                unbind();
+            }
+
 
             void destroy(){
                 glDeleteBuffers(1, &id);
@@ -53,6 +60,12 @@ namespace Renderer {
                 glGenBuffers(1, &id);
                 bind();
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, drawMethod);
+                count=size/sizeof(T);
+                unbind();
+            }
+            void addSubBuffer(const T* data, unsigned int size, GLintptr offset){
+                bind();
+                glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset,size, data);
                 count=size/sizeof(T);
                 unbind();
             }
@@ -97,6 +110,8 @@ namespace Renderer {
                     offset+=elem.count * VBElement::getSize(elem.type);
                     currentAttributeIndex++;
                 }
+                vbo.unbind();
+                unbind();
             }
     };
 }

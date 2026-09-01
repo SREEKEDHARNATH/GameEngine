@@ -1,5 +1,4 @@
 #include "gl.h"
-#include "VBLayout.h"
 #include "Window.h"
 #include <GLFW/glfw3.h>
 #include <unordered_set>
@@ -7,7 +6,6 @@
 #include <iostream>
 #include "KeyListener.h"
 #include "MouseListener.h"
-#include "Texture.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const char* message, const void* userParam){
@@ -81,20 +79,9 @@ namespace Window {
         Shader::shader shader;
         shader.create("res/Shaders/square.vert", "res/Shaders/square.frag");
 
-        VBLayout layout;
-        layout.push<float>(2);
+        Renderer::Renderbatch<1000> batch;
+        batch.addQuadWithPos(-0.5f, -0.5f, 0.5f);
 
-        Renderer::Renderbatch batch;
-
-        std::array<std::array<float, 2>, 4> vertices;
-        vertices[0] = {-0.5f, -0.5f};
-        vertices[1] = {0.5f, -0.5f};
-        vertices[2] = {0.5f,  0.5f};
-        vertices[3] = {-0.5f,  0.5f};
-
-        batch.addQuad<2, 1>(vertices);
-
-        batch.setLayout(layout);
         batch.setShader(shader);
 
         while (!glfwWindowShouldClose(instance)){

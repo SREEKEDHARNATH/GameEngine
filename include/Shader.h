@@ -1,3 +1,4 @@
+#pragma once
 #include "qualifier.hpp"
 #include <string>
 #include <unordered_map>
