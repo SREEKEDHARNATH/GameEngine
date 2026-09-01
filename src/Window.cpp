@@ -7,6 +7,7 @@
 #include "KeyListener.h"
 #include "MouseListener.h"
 #include "Sound.h"
+#include "imgui.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const char* message, const void* userParam){
@@ -70,6 +71,7 @@ namespace Window {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Sound::SoundSystem::init();
+        getImgui().init(getWindow());
         return true;
     }
 
@@ -89,11 +91,18 @@ namespace Window {
         music.create("res/Sounds/mc.wav", false, false);
         music.setVolume(1);
         music.play();
+
         while (!glfwWindowShouldClose(instance)){
             glfwPollEvents();
             glClear(GL_COLOR_BUFFER_BIT);
 
             batch.draw();
+
+            getImgui().startFrame();
+            ImGui::Begin("Hello");
+            ImGui::Text("Hi is this working");
+            ImGui::End();
+            getImgui().render();
 
             Keylistener::endFrame();
             MouseListener::endFrame();
@@ -101,6 +110,7 @@ namespace Window {
             glfwSwapBuffers(instance);
         }
         Sound::SoundSystem::destroy();
+        getImgui().destroy();
         glfwDestroyWindow(instance);
         glfwTerminate();
     }
@@ -118,5 +128,10 @@ namespace Window {
     }
     const char* getTitle(){
         return "Game";
+    }
+
+    Imgui::Imgui getImgui(){
+        static Imgui::Imgui s_instance;
+        return s_instance;
     }
 }
