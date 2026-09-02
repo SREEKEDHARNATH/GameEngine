@@ -108,6 +108,7 @@ namespace Shader {
         }
 
         int loc = glGetUniformLocation(id, name);
+        if (loc == -1) std::cout << "Warning cant find " << name << "\n";
         locCache[name] = loc;
         return loc;
     }

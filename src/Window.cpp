@@ -8,6 +8,9 @@
 #include "MouseListener.h"
 #include "Sound.h"
 #include "imgui.h"
+#include "matrix_clip_space.hpp"
+#include "matrix_float4x4.hpp"
+#include "Camera.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
     const char* message, const void* userParam){
@@ -84,25 +87,49 @@ namespace Window {
         shader.create("res/Shaders/square.vert", "res/Shaders/square.frag");
 
         Renderer::Renderbatch<1000> batch;
-        batch.addQuadWithPos(-0.5f, -0.5f, 0.5f);
+        batch.addQuadWithPos(100.0f, 100.0f, 100.0f);
 
         batch.setShader(shader);
-        Sound::Sound music;
-        music.create("res/Sounds/mc.wav", false, false);
-        music.setVolume(1);
-        music.play();
+
+        Camera::Camera::init(getWidth(), getHeight());
+
+        shader.bind();
+        shader.uploadMat4f("u_MVP", Camera::Camera::getVP());
+        shader.unbind();
 
         while (!glfwWindowShouldClose(instance)){
             glfwPollEvents();
             glClear(GL_COLOR_BUFFER_BIT);
-
             batch.draw();
+            static int x=0,y=0,speed=1;
 
             getImgui().startFrame();
             ImGui::Begin("Hello");
-            ImGui::Text("Hi is this working");
+            ImGui::Text("Change");
+            ImGui::DragInt("Speed", &speed);
             ImGui::End();
             getImgui().render();
+            if (Keylistener::isKeyPressedOnce(GLFW_KEY_UP)){
+                y=speed;
+                x=0;
+            }
+            if (Keylistener::isKeyPressedOnce(GLFW_KEY_DOWN)){
+                y=-speed;
+                x=0;
+            }
+            if (Keylistener::isKeyPressedOnce(GLFW_KEY_RIGHT)){
+                y=0;
+                x=speed;
+            }
+            if (Keylistener::isKeyPressedOnce(GLFW_KEY_LEFT)){
+                y=0;
+                x=-speed;
+            }
+
+            Camera::Camera::move(x,y);
+            shader.bind();
+            shader.uploadMat4f("u_MVP", Camera::Camera::getVP());
+            shader.unbind();
 
             Keylistener::endFrame();
             MouseListener::endFrame();
