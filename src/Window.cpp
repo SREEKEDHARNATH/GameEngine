@@ -8,8 +8,7 @@
 #include "MouseListener.h"
 #include "Sound.h"
 #include "imgui.h"
-#include "matrix_clip_space.hpp"
-#include "matrix_float4x4.hpp"
+#include "Framebuffer.h"
 #include "Camera.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
@@ -73,6 +72,8 @@ namespace Window {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_DEPTH_TEST);
+        Camera::Camera::init(getWidth(), getHeight());
         Sound::SoundSystem::init();
         getImgui().init(getWindow());
         return true;
@@ -83,58 +84,64 @@ namespace Window {
             return;
         }
 
-        Shader::shader shader;
-        shader.create("res/Shaders/square.vert", "res/Shaders/square.frag");
-
         Renderer::Renderbatch<1000> batch;
         batch.addQuadWithPos(100.0f, 100.0f, 100.0f);
+        batch.addQuadWithPos(300.0f, 100.0f, 100.0f);
+        batch.addQuadWithPos(0.0f, 0.0f, 1.0f);
 
-        batch.setShader(shader);
 
-        Camera::Camera::init(getWidth(), getHeight());
-
-        shader.bind();
-        shader.uploadMat4f("u_MVP", Camera::Camera::getVP());
-        shader.unbind();
+        batch.setShader("res/Shaders/square.vert", "res/Shaders/square.frag");
+        Framebuffer::Framebuffer viewportFBO;
+        ImVec2 viewportSize = ImVec2(getWidth(), getHeight());
+        viewportFBO.create(viewportSize.x, viewportSize.y);
 
         while (!glfwWindowShouldClose(instance)){
             glfwPollEvents();
-            glClear(GL_COLOR_BUFFER_BIT);
-            batch.draw();
-            static int x=0,y=0,speed=1;
 
-            getImgui().startFrame();
-            ImGui::Begin("Hello");
-            ImGui::Text("Change");
-            ImGui::DragInt("Speed", &speed);
-            ImGui::End();
-            getImgui().render();
-            if (Keylistener::isKeyPressedOnce(GLFW_KEY_UP)){
-                y=speed;
-                x=0;
-            }
-            if (Keylistener::isKeyPressedOnce(GLFW_KEY_DOWN)){
-                y=-speed;
-                x=0;
-            }
-            if (Keylistener::isKeyPressedOnce(GLFW_KEY_RIGHT)){
-                y=0;
-                x=speed;
-            }
-            if (Keylistener::isKeyPressedOnce(GLFW_KEY_LEFT)){
-                y=0;
-                x=-speed;
-            }
+                getImgui().startFrame();
+                ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
 
-            Camera::Camera::move(x,y);
-            shader.bind();
-            shader.uploadMat4f("u_MVP", Camera::Camera::getVP());
-            shader.unbind();
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+                ImGui::Begin("Game Viewport");
+                ImVec2 panelSize = ImGui::GetContentRegionAvail();
 
-            Keylistener::endFrame();
-            MouseListener::endFrame();
+                if (panelSize.x > 0 && panelSize.y > 0 &&
+                   (panelSize.x != viewportSize.x || panelSize.y != viewportSize.y)) {
+                    viewportSize = panelSize;
+                    viewportFBO.destroy();
+                    viewportFBO.create(viewportSize.x, viewportSize.y);
+                    Camera::Camera::init(viewportSize.x, viewportSize.y);
+                }
 
-            glfwSwapBuffers(instance);
+                if (viewportSize.x > 0 && viewportSize.y > 0) {
+                    viewportFBO.bind();
+                    glViewport(0, 0, (GLsizei)viewportSize.x, (GLsizei)viewportSize.y);
+
+                    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                    batch.draw();
+
+                    viewportFBO.unbind();
+                }
+
+                if (viewportSize.x > 0 && viewportSize.y > 0) {
+                    uintptr_t texID = viewportFBO.getTexId();
+                    ImGui::Image(reinterpret_cast<void*>(texID), viewportSize, ImVec2(0, 1), ImVec2(1, 0));
+                }
+
+                ImGui::End();
+                ImGui::PopStyleVar();
+
+                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT);
+
+                getImgui().render();
+
+                Keylistener::endFrame();
+                MouseListener::endFrame();
+
+                glfwSwapBuffers(instance);
         }
         Sound::SoundSystem::destroy();
         getImgui().destroy();

@@ -1,4 +1,7 @@
 {
+  "inlay_hints": {
+    "enabled": false
+  },
   "file_types": {
     "GLSL": ["vert", "frag", "geom", "comp", "glsl"],
   }

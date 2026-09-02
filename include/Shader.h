@@ -7,6 +7,7 @@ namespace Shader {
         private:
             unsigned int id;
             std::unordered_map<std::string, int> locCache;
+            bool hasInited=false;
         public:
 
             void create(const char* vPath, const char* fPath);

@@ -1,4 +1,5 @@
 #pragma once
+#include "Camera.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "VBLayout.h"
@@ -25,8 +26,9 @@ namespace Renderer {
 
 
         public:
-            void setShader(Shader::shader& SHADER){
-                shader = SHADER;
+            void setShader(const char* vPath, const char* fPath){
+                shader.destroy();
+                shader.create(vPath, fPath);
             }
             void setLayout(const VBLayout& layout) {
                 if (!firstLayout) return;
@@ -143,7 +145,7 @@ namespace Renderer {
                 }
 
                 shader.bind();
-
+                shader.uploadMat4f("u_VP", Camera::Camera::getVP());
                 glDrawElements(GL_TRIANGLES, elemsCount, GL_UNSIGNED_INT, nullptr);
 
                 vao.unbind();

@@ -83,7 +83,9 @@ namespace Shader {
 
     }
     void shader::create(const char* vPath, const char* fPath){
+        if (hasInited) destroy();
         makeShader(vPath, fPath, id);
+        hasInited=true;
 
     }
 
@@ -96,9 +98,12 @@ namespace Shader {
     }
 
     void shader::destroy() {
-        unbind();
-        glDeleteProgram(id);
-        id=0;
+        if (hasInited){
+            unbind();
+            glDeleteProgram(id);
+            id=0;
+            hasInited=false;
+        }
     }
 
     int shader::getLoc(const char* name){
