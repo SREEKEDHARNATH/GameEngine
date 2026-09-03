@@ -11,5 +11,5 @@ namespace Window{
     int getHeight();
     const char* getTitle();
     Imgui::Imgui getImgui();
-
+    unsigned long long getCounter();
 }

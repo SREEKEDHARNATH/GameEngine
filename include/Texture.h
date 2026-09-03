@@ -5,8 +5,8 @@ namespace Texture {
     public:
 
         void create(const char* filePath);
-        void bind(int texSlot=0);
-        void unbind();
+        void bind(int texSlot=0) const;
+        void unbind() const;
         void destroy();
     };
 }

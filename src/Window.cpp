@@ -1,9 +1,13 @@
+#include "Sprite.h"
+#include "SpriteComponent.h"
 #include "gl.h"
-#include "Window.h"
 #include <GLFW/glfw3.h>
 #include <unordered_set>
-#include "Renderbatch.h"
 #include <iostream>
+
+#include "Texture.h"
+#include "Window.h"
+#include "Renderbatch.h"
 #include "KeyListener.h"
 #include "MouseListener.h"
 #include "Sound.h"
@@ -84,21 +88,40 @@ namespace Window {
             return;
         }
 
-        Renderer::Renderbatch<1000> batch;
-        batch.addQuadWithPos(100.0f, 100.0f, 100.0f);
-        batch.addQuadWithPos(300.0f, 100.0f, 100.0f);
-        batch.addQuadWithPos(0.0f, 0.0f, 1.0f);
+        constexpr int size=1000;
+        Renderer::Renderbatch<size> batch;
 
+        for (int i=0;i<10;i++){
+            batch.addQuadWithTexAndID(50.0f*i, 50.0f*i, i ,50.0f);
+        }
 
+        batch.setIsDynamic(true);
         batch.setShader("res/Shaders/square.vert", "res/Shaders/square.frag");
+
+        int sampler[10] = {0,1,2,3,4,5,6,7,8,9};
+
+        batch.getShader().bind();
+        batch.getShader().uploadArray<10>("textures", sampler);
+        batch.getShader().unbind();
+
         Framebuffer::Framebuffer viewportFBO;
         ImVec2 viewportSize = ImVec2(getWidth(), getHeight());
         viewportFBO.create(viewportSize.x, viewportSize.y);
 
+        Sprite spr;
+        Texture::Texture tex;
+        tex.create("res/Textures/idk.png");
+        SpriteComponent comp;
+        comp.setTexturePtr(tex);
+        spr.addComponent(&comp);
+
         while (!glfwWindowShouldClose(instance)){
             glfwPollEvents();
+            tex.bind(1);
 
-                getImgui().startFrame();
+            getImgui().startFrame();
+            spr.Imgui();
+            {
                 ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -106,42 +129,44 @@ namespace Window {
                 ImVec2 panelSize = ImGui::GetContentRegionAvail();
 
                 if (panelSize.x > 0 && panelSize.y > 0 &&
-                   (panelSize.x != viewportSize.x || panelSize.y != viewportSize.y)) {
-                    viewportSize = panelSize;
-                    viewportFBO.destroy();
-                    viewportFBO.create(viewportSize.x, viewportSize.y);
-                    Camera::Camera::init(viewportSize.x, viewportSize.y);
-                }
+                    (panelSize.x != viewportSize.x || panelSize.y != viewportSize.y)) {
+                        viewportSize = panelSize;
+                        viewportFBO.destroy();
+                        viewportFBO.create(viewportSize.x, viewportSize.y);
+                        Camera::Camera::init(viewportSize.x, viewportSize.y);
+                    }
 
                 if (viewportSize.x > 0 && viewportSize.y > 0) {
-                    viewportFBO.bind();
-                    glViewport(0, 0, (GLsizei)viewportSize.x, (GLsizei)viewportSize.y);
+                        viewportFBO.bind();
+                        glViewport(0, 0, (GLsizei)viewportSize.x, (GLsizei)viewportSize.y);
 
-                    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+                        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                    batch.draw();
+                        batch.draw();
 
-                    viewportFBO.unbind();
-                }
+                        viewportFBO.unbind();
+                    }
 
                 if (viewportSize.x > 0 && viewportSize.y > 0) {
-                    uintptr_t texID = viewportFBO.getTexId();
-                    ImGui::Image(reinterpret_cast<void*>(texID), viewportSize, ImVec2(0, 1), ImVec2(1, 0));
-                }
+                        uintptr_t texID = viewportFBO.getTexId();
+                        ImGui::Image(reinterpret_cast<void*>(texID), viewportSize, ImVec2(0, 1), ImVec2(1, 0));
+                    }
 
                 ImGui::End();
                 ImGui::PopStyleVar();
+            }
 
-                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                glClear(GL_COLOR_BUFFER_BIT);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-                getImgui().render();
+            getImgui().render();
 
-                Keylistener::endFrame();
-                MouseListener::endFrame();
+            tex.unbind();
+            Keylistener::endFrame();
+            MouseListener::endFrame();
 
-                glfwSwapBuffers(instance);
+            glfwSwapBuffers(instance);
         }
         Sound::SoundSystem::destroy();
         getImgui().destroy();
@@ -167,5 +192,11 @@ namespace Window {
     Imgui::Imgui getImgui(){
         static Imgui::Imgui s_instance;
         return s_instance;
+    }
+
+    unsigned long long getCounter(){
+        static long long counter;
+        counter++;
+        return counter-1;
     }
 }

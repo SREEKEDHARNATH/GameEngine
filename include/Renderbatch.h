@@ -22,13 +22,15 @@ namespace Renderer {
             int curIndexOfBuffer=0;
             int prvCurIndex=0;
             bool firstTime=true,firstLayout=true;
-
-
+            bool isDynamic=false;
 
         public:
             void setShader(const char* vPath, const char* fPath){
                 shader.destroy();
                 shader.create(vPath, fPath);
+            }
+            const Shader::shader& getShader(){
+                return shader;
             }
             void setLayout(const VBLayout& layout) {
                 if (!firstLayout) return;
@@ -124,8 +126,15 @@ namespace Renderer {
 
                 if (prvCurIndex != curIndex || firstTime){
                     if (firstTime){
-                        vbo.init(buffer, maxSize * sizeof(float));
-                        ebo.init(indices, maxSize * sizeof(unsigned int));
+                        if (isDynamic){
+                            vbo.init(buffer, maxSize * sizeof(float), GL_DYNAMIC_DRAW);
+                            ebo.init(indices, maxSize * sizeof(unsigned int), GL_DYNAMIC_DRAW);
+                        }
+                        else {
+                            vbo.init(buffer, maxSize * sizeof(float));
+                            ebo.init(indices, maxSize * sizeof(unsigned int));
+
+                        }
                         vbo.bind();
                         vao.addVbo(vbo, vblayout);
                     }
@@ -163,6 +172,9 @@ namespace Renderer {
                 elemsCount=0;
 
 
+            }
+            void setIsDynamic(bool val){
+                isDynamic=val;
             }
     };
 

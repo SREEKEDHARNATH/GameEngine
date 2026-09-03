@@ -89,15 +89,15 @@ namespace Shader {
 
     }
 
-    void shader::bind(){
+    void shader::bind() const{
         glUseProgram(id);
     }
 
-    void shader::unbind(){
+    void shader::unbind() const{
         glUseProgram(0);
     }
 
-    void shader::destroy() {
+    void shader::destroy(){
         if (hasInited){
             unbind();
             glDeleteProgram(id);
@@ -106,7 +106,7 @@ namespace Shader {
         }
     }
 
-    int shader::getLoc(const char* name){
+    int shader::getLoc(const char* name) const{
 
         if (locCache.contains(name)){
             return locCache[name];
@@ -118,67 +118,67 @@ namespace Shader {
         return loc;
     }
 
-    void shader::uploadInt(const char* name, int val){
+    void shader::uploadInt(const char* name, int val) const{
         glUniform1i(getLoc(name), val);
     }
 
-    void shader::uploadFloat(const char* name, float val){
+    void shader::uploadFloat(const char* name, float val) const{
         glUniform1f(getLoc(name), val);
     }
 
-    void shader::uploadDouble(const char* name, double val){
+    void shader::uploadDouble(const char* name, double val) const{
         glUniform1d(getLoc(name), val);
     }
 
 
-    void shader::uploadVec2f(const char* name, glm::vec<2, float> vec2){
+    void shader::uploadVec2f(const char* name, glm::vec<2, float> vec2) const{
         glUniform2f(getLoc(name), vec2.x, vec2.y);
     }
 
-    void shader::uploadVec3f(const char* name, glm::vec<3, float> vec2){
+    void shader::uploadVec3f(const char* name, glm::vec<3, float> vec2) const{
         glUniform3f(getLoc(name), vec2.x, vec2.y, vec2.z);
     }
 
-    void shader::uploadVec4f(const char* name, glm::vec<4, float> vec2){
+    void shader::uploadVec4f(const char* name, glm::vec<4, float> vec2) const{
         glUniform4f(getLoc(name), vec2.x, vec2.y, vec2.z, vec2.w);
     }
 
 
-    void shader::uploadVec2i(const char* name, glm::vec<2, int> vec2){
+    void shader::uploadVec2i(const char* name, glm::vec<2, int> vec2) const{
         glUniform2i(getLoc(name), vec2.x, vec2.y);
     }
 
-    void shader::uploadVec3i(const char* name, glm::vec<3, int> vec2){
+    void shader::uploadVec3i(const char* name, glm::vec<3, int> vec2) const{
         glUniform3i(getLoc(name), vec2.x, vec2.y, vec2.z);
     }
 
-    void shader::uploadVec4i(const char* name, glm::vec<4, int> vec2){
+    void shader::uploadVec4i(const char* name, glm::vec<4, int> vec2) const{
         glUniform4i(getLoc(name), vec2.x, vec2.y, vec2.z, vec2.w);
     }
 
 
-    void shader::uploadVec2d(const char* name, glm::vec<2, double> vec2){
+    void shader::uploadVec2d(const char* name, glm::vec<2, double> vec2) const{
         glUniform2d(getLoc(name), vec2.x, vec2.y);
     }
 
-    void shader::uploadVec3d(const char* name, glm::vec<3, double> vec2){
+    void shader::uploadVec3d(const char* name, glm::vec<3, double> vec2) const{
         glUniform3d(getLoc(name), vec2.x, vec2.y, vec2.z);
     }
 
-    void shader::uploadVec4d(const char* name, glm::vec<4, double> vec2){
+    void shader::uploadVec4d(const char* name, glm::vec<4, double> vec2) const{
         glUniform4d(getLoc(name), vec2.x, vec2.y, vec2.z, vec2.w);
     }
 
 
-    void shader::uploadMat2f(const char* name, glm::mat<2, 2, float> mat2){
+    void shader::uploadMat2f(const char* name, glm::mat<2, 2, float> mat2) const{
         glUniformMatrix2fv(getLoc(name), 1, GL_FALSE, &mat2[0][0]);
     }
 
-    void shader::uploadMat3f(const char* name, glm::mat<3, 3, float> mat3){
+    void shader::uploadMat3f(const char* name, glm::mat<3, 3, float> mat3) const{
         glUniformMatrix3fv(getLoc(name), 1, GL_FALSE, &mat3[0][0]);
     }
 
-    void shader::uploadMat4f(const char* name, glm::mat<4, 4, float> mat4){
+    void shader::uploadMat4f(const char* name, glm::mat<4, 4, float> mat4) const{
         glUniformMatrix4fv(getLoc(name), 1, GL_FALSE, &mat4[0][0]);
     }
 

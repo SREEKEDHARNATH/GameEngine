@@ -29,12 +29,12 @@ namespace Texture {
 
     }
 
-    void Texture::bind(int texSlot){
+    void Texture::bind(int texSlot) const{
         glActiveTexture(GL_TEXTURE0 + texSlot);
         glBindTexture(GL_TEXTURE_2D, id);
     }
 
-    void Texture::unbind(){
+    void Texture::unbind() const{
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
