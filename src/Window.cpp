@@ -90,19 +90,8 @@ namespace Window {
 
         constexpr int size=1000;
         Renderer::Renderbatch<size> batch;
-
-        for (int i=0;i<10;i++){
-            batch.addQuadWithTexAndID(50.0f*i, 50.0f*i, i ,50.0f);
-        }
-
         batch.setIsDynamic(true);
         batch.setShader("res/Shaders/square.vert", "res/Shaders/square.frag");
-
-        int sampler[10] = {0,1,2,3,4,5,6,7,8,9};
-
-        batch.getShader().bind();
-        batch.getShader().uploadArray<10>("textures", sampler);
-        batch.getShader().unbind();
 
         Framebuffer::Framebuffer viewportFBO;
         ImVec2 viewportSize = ImVec2(getWidth(), getHeight());
@@ -116,6 +105,8 @@ namespace Window {
         spr.addComponent(&comp);
 
         while (!glfwWindowShouldClose(instance)){
+            glm::vec4 col = comp.getColor();
+            batch.addQuadWithColor(50.0f, 50.0f, col.x, col.y, col.z, col.w ,50.0f);
             glfwPollEvents();
             tex.bind(1);
 
@@ -167,7 +158,9 @@ namespace Window {
             MouseListener::endFrame();
 
             glfwSwapBuffers(instance);
+            batch.clear();
         }
+        spr.removeComponent(&comp);
         Sound::SoundSystem::destroy();
         getImgui().destroy();
         glfwDestroyWindow(instance);

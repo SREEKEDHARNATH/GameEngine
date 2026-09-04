@@ -13,22 +13,29 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(Threads REQUIRED)
 
-# 1. Collect all header files in include/ to extract their parent directories
-file(GLOB_RECURSE ALL_INCLUDE_FILES
+# 1. Collect all files and subdirectories under include/ and src/ for flat includes
+file(GLOB_RECURSE ALL_PROJECT_FILES
     CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*"
 )
 
-# 2. Extract unique directories from the found headers
-set(INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")
-foreach(HEADER_FILE ${ALL_INCLUDE_FILES})
-    get_filename_component(DIR_PATH ${HEADER_FILE} DIRECTORY)
-    list(APPEND INCLUDE_DIRS ${DIR_PATH})
+set(INCLUDE_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+
+foreach(ITEM ${ALL_PROJECT_FILES})
+    if(IS_DIRECTORY "${ITEM}")
+        list(APPEND INCLUDE_DIRS "${ITEM}")
+    else()
+        get_filename_component(PARENT_DIR "${ITEM}" DIRECTORY)
+        list(APPEND INCLUDE_DIRS "${PARENT_DIR}")
+    endif()
 endforeach()
 list(REMOVE_DUPLICATES INCLUDE_DIRS)
 
-# 3. Collect project source files
+# 2. Collect project source files
 file(GLOB_RECURSE SOURCES
     CONFIGURE_DEPENDS
     "src/*.cpp"
@@ -43,8 +50,8 @@ list(FILTER SOURCES EXCLUDE REGEX ".*/(tools|c_api|backend)/.*")
 # Explicitly re-add only the miniaudio backend file
 file(GLOB_RECURSE MINIAUDIO_SRC
     CONFIGURE_DEPENDS
-   "${CMAKE_CURRENT_SOURCE_DIR}/include/*soloud_miniaudio.cpp"
-   "${CMAKE_CURRENT_SOURCE_DIR}/src/*soloud_miniaudio.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*soloud_miniaudio.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*soloud_miniaudio.cpp"
 )
 list(APPEND SOURCES ${MINIAUDIO_SRC})
 list(REMOVE_DUPLICATES SOURCES)
@@ -74,4 +81,8 @@ target_link_libraries(main PRIVATE
     ${CMAKE_DL_LIBS}
     Threads::Threads
     m
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/libbox2d.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/libimgui.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/libsoloud.a
+
 )
