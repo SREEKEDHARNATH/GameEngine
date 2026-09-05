@@ -1,8 +1,6 @@
 #include "EditorWindow.h"
-#include "SpriteSheet.h"
 #include "gl.h"
 #include <GLFW/glfw3.h>
-#include <algorithm>
 #include <unordered_set>
 #include <iostream>
 
@@ -93,10 +91,6 @@ namespace Window {
         batch.setIsDynamic(true);
         batch.setShader("res/Shaders/square.vert", "res/Shaders/square.frag");
 
-        Renderer::SpriteSheet<26, 3> sprSheet;
-        sprSheet.create(224, 32, 16,16, "res/Textures/spritesheet.png", "res/Shaders/tex.vert", "res/Shaders/tex.frag");
-        sprSheet.addSamplers<10>({0,1,2,3,4,5,6,7,8,9});
-
         Framebuffer::Framebuffer viewportFBO;
         ImVec2 viewportSize = ImVec2(getWidth(), getHeight());
         viewportFBO.create(viewportSize.x, viewportSize.y);
@@ -106,15 +100,6 @@ namespace Window {
             batch.addQuadWithColor(50.0f, 50.0f, 1,0,0,1 ,50.0f);
 
             getImgui().startFrame();
-            static int num=1;
-            if (Keylistener::isKeyPressedOnce(GLFW_KEY_UP)){
-                num = std::min(25, num + 1);
-            }
-            if (Keylistener::isKeyPressedOnce(GLFW_KEY_DOWN)){
-                num = std::max(0, num - 1);
-            }
-
-            sprSheet.queue(150.0f, 150.0f, 64.0f, num);
             ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
             editor::Imgui();
             {
@@ -139,7 +124,6 @@ namespace Window {
                         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                         batch.draw();
-                        sprSheet.draw();
                         viewportFBO.unbind();
                     }
 
@@ -152,7 +136,6 @@ namespace Window {
                 ImGui::PopStyleVar();
             }
 
-            sprSheet.flush();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 

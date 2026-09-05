@@ -3,20 +3,24 @@
 #include "Renderbatch.h"
 #include "Texture.h"
 #include <array>
+#include <vector>
 namespace Renderer {
 
-    template<int count, int slot>
+    template<int count>
     class SpriteSheet{
         private:
             int texWidth,texHeight;
             int sprWidth,sprHeight;
             const char* filePath;
-            std::array<std::array<float, 8>, count> data;
+            std::vector<std::array<float, 8>> data;
             Texture::Texture tex;
             Renderbatch<count * 9> batch;
+            int slot=0;
 
         public:
-            void create(int tW, int tH, int sW, int sH, const char* path, const char* vPath, const char* fPath){
+            void create(int tW, int tH, int sW, int sH,int Slot, const char* path, const char* vPath, const char* fPath){
+                slot=Slot;
+                data.resize(count);
                 tex.create(path);
                 texWidth = tW;
                 texHeight = tH;
@@ -80,8 +84,13 @@ namespace Renderer {
             void flush(){
                 batch.clear();
             }
-            const std::array<std::array<float, 8>, count>& getData(){return data;}
-            const Texture::Texture& getTexture(){return tex;}
+            void destroy(){
+                tex.destroy();
+                batch.clear();
+                data.clear();
+            }
+            const std::vector<std::array<float, 8>>& getData() const {return data;}
+            const Texture::Texture& getTexture() const {return tex;}
 
     };
 }

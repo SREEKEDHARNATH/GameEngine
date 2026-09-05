@@ -1,6 +1,7 @@
 #include "Texture.h"
 #include "stb_image.h"
 #include "gl.h"
+#include <iostream>
 
 namespace Texture {
 
@@ -44,5 +45,7 @@ namespace Texture {
         id=0;
     }
 
-
+    unsigned int Texture::getId() const{
+        return id;
+    }
 }
