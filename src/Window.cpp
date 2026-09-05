@@ -1,11 +1,11 @@
-#include "Sprite.h"
-#include "SpriteComponent.h"
+#include "EditorWindow.h"
+#include "SpriteSheet.h"
 #include "gl.h"
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <unordered_set>
 #include <iostream>
 
-#include "Texture.h"
 #include "Window.h"
 #include "Renderbatch.h"
 #include "KeyListener.h"
@@ -56,7 +56,7 @@ namespace Window {
         }
 
         glfwMakeContextCurrent(instance);
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
 
         if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
             std::cerr << "Failed to initialize GLAD" << std::endl;
@@ -88,32 +88,36 @@ namespace Window {
             return;
         }
 
-        constexpr int size=1000;
+        constexpr int size=100;
         Renderer::Renderbatch<size> batch;
         batch.setIsDynamic(true);
         batch.setShader("res/Shaders/square.vert", "res/Shaders/square.frag");
+
+        Renderer::SpriteSheet<26, 3> sprSheet;
+        sprSheet.create(224, 32, 16,16, "res/Textures/spritesheet.png", "res/Shaders/tex.vert", "res/Shaders/tex.frag");
+        sprSheet.addSamplers<10>({0,1,2,3,4,5,6,7,8,9});
 
         Framebuffer::Framebuffer viewportFBO;
         ImVec2 viewportSize = ImVec2(getWidth(), getHeight());
         viewportFBO.create(viewportSize.x, viewportSize.y);
 
-        Sprite spr;
-        Texture::Texture tex;
-        tex.create("res/Textures/idk.png");
-        SpriteComponent comp;
-        comp.setTexturePtr(tex);
-        spr.addComponent(&comp);
-
         while (!glfwWindowShouldClose(instance)){
-            glm::vec4 col = comp.getColor();
-            batch.addQuadWithColor(50.0f, 50.0f, col.x, col.y, col.z, col.w ,50.0f);
             glfwPollEvents();
-            tex.bind(1);
+            batch.addQuadWithColor(50.0f, 50.0f, 1,0,0,1 ,50.0f);
 
             getImgui().startFrame();
-            spr.Imgui();
+            static int num=1;
+            if (Keylistener::isKeyPressedOnce(GLFW_KEY_UP)){
+                num = std::min(25, num + 1);
+            }
+            if (Keylistener::isKeyPressedOnce(GLFW_KEY_DOWN)){
+                num = std::max(0, num - 1);
+            }
+
+            sprSheet.queue(150.0f, 150.0f, 64.0f, num);
+            ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
+            editor::Imgui();
             {
-                ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
                 ImGui::Begin("Game Viewport");
@@ -135,7 +139,7 @@ namespace Window {
                         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                         batch.draw();
-
+                        sprSheet.draw();
                         viewportFBO.unbind();
                     }
 
@@ -148,19 +152,18 @@ namespace Window {
                 ImGui::PopStyleVar();
             }
 
+            sprSheet.flush();
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             getImgui().render();
 
-            tex.unbind();
             Keylistener::endFrame();
             MouseListener::endFrame();
 
             glfwSwapBuffers(instance);
             batch.clear();
         }
-        spr.removeComponent(&comp);
         Sound::SoundSystem::destroy();
         getImgui().destroy();
         glfwDestroyWindow(instance);

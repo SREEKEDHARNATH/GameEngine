@@ -11,7 +11,7 @@ namespace Renderer {
     class Renderbatch{
         private:
             float buffer[maxSize];
-            unsigned int indices[maxSize];
+            unsigned int indices[(maxSize*3)/10];
 
             Renderer::vertexBuffer<float> vbo;
             Renderer::indexBuffer<unsigned int> ebo;
@@ -108,7 +108,7 @@ namespace Renderer {
                 addQuad<5>(vertices);
             }
 
-            void updateIndexBuffer(){
+            void updateIndexBuffer() {
                 indices[elemsCount + 0] = curIndex + 0;
                 indices[elemsCount + 1] = curIndex + 1;
                 indices[elemsCount + 2] = curIndex + 2;
@@ -120,7 +120,7 @@ namespace Renderer {
 
             }
 
-            void draw(){
+            void draw(void (*draw)(int numOfElems) = [](int elems){glDrawElements(GL_TRIANGLES, elems, GL_UNSIGNED_INT, nullptr);}) {
                 if (elemsCount==0) return;
                 vao.bind();
 
@@ -155,7 +155,7 @@ namespace Renderer {
 
                 shader.bind();
                 shader.uploadMat4f("u_VP", Camera::Camera::getVP());
-                glDrawElements(GL_TRIANGLES, elemsCount, GL_UNSIGNED_INT, nullptr);
+                draw(elemsCount);
 
                 vao.unbind();
                 vbo.unbind();
